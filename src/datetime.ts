@@ -212,6 +212,10 @@ export class DateTime {
     return this.dateInstance.getFullYear();
   }
 
+  public setTime(arg: number): number {
+    return this.dateInstance.setTime(arg);
+  }
+
   public setMonth(arg: number): number {
     return this.dateInstance.setMonth(arg);
   }

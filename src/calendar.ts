@@ -259,14 +259,17 @@ export class Calendar extends LPCore {
     weekdaysRow.className = style.monthItemWeekdaysRow;
 
     if (this.options.showWeekNumbers) {
-      weekdaysRow.innerHTML = '<div>W</div>';
+      const weekNumbersHeader = document.createElement('div');
+      weekNumbersHeader.innerText = "W."
+      weekNumbersHeader.className = style.monthItemWeekNumbersHeader;
+      weekdaysRow.appendChild(weekNumbersHeader);
     }
 
     for (let w = 1; w <= 7; w += 1) {
       // 7 days, 4 is «Thursday» (new Date(1970, 0, 1, 12, 0, 0, 0))
       const dayIdx = 7 - 4 + this.options.firstDay + w;
       const weekday = document.createElement('div');
-      weekday.innerHTML = this.weekdayName(dayIdx);
+      weekday.innerHTML = `${this.weekdayName(dayIdx)}.`; // Since this is a shortend name. It shoudl end with dot
       weekday.title = this.weekdayName(dayIdx, 'long');
       weekdaysRow.appendChild(weekday);
     }
@@ -276,24 +279,31 @@ export class Calendar extends LPCore {
 
     const skipDays = this.calcSkipDays(startDate);
 
-    if (this.options.showWeekNumbers && skipDays) {
-      days.appendChild(this.renderWeekNumber(startDate));
-    }
-
-    for (let idx = 0; idx < skipDays; idx += 1) {
-      const dummy = document.createElement('div');
-      days.appendChild(dummy);
-    }
-
     // tslint:disable-next-line: prefer-for-of
-    for (let idx = 1; idx <= totalDays; idx += 1) {
+    let renderedWeekDays = 0
+    let weekContainer = document.createElement('div')
+    weekContainer.className = style.weekItem;
+    for (let idx = 1 - skipDays; idx <= totalDays || (renderedWeekDays > 0 && renderedWeekDays < 7); idx += 1) {
+      const wasTimestamp = startDate.getTime()
       startDate.setDate(idx);
 
-      if (this.options.showWeekNumbers && startDate.getDay() === this.options.firstDay) {
-        days.appendChild(this.renderWeekNumber(startDate));
+      if (this.options.showWeekNumbers && renderedWeekDays == 0) {
+        weekContainer.appendChild(this.renderWeekNumber(startDate));
       }
 
-      days.appendChild(this.renderDay(startDate));
+      const rendered = this.renderDay(startDate)
+      weekContainer.appendChild(rendered);
+      if (idx < 1 || idx > totalDays) {
+        rendered.classList.add(style.adjacentMonthDayItem);
+      }
+      renderedWeekDays++;
+      startDate.setTime(wasTimestamp);
+      if (renderedWeekDays == 7) {
+        days.appendChild(weekContainer)
+        renderedWeekDays = 0;
+        weekContainer = document.createElement('div');
+        weekContainer.className = style.weekItem;
+      }
     }
 
     month.appendChild(monthHeader);
@@ -476,12 +486,12 @@ export class Calendar extends LPCore {
     return footer;
   }
 
-  protected renderWeekNumber(date) {
+  protected renderWeekNumber(date: DateTime) {
     const wn = document.createElement('div');
     const week = date.getWeek(this.options.firstDay);
     wn.className = style.weekNumber;
-    wn.innerHTML = week === 53 && date.getMonth() === 0 ? '53 / 1' : week;
-
+    wn.innerHTML = String(week);
+    wn.dataset.time = String(date.getTime());
     return wn;
   }
 
