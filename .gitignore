@@ -4,3 +4,4 @@
 /dist
 /publish.sh
 package-lock.json
+.npmrc
