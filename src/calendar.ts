@@ -1,7 +1,7 @@
 import { LPCore } from './core';
 import { DateTime } from './datetime';
 import { ILPConfiguration } from './interfaces';
-import * as style from './scss/main.scss';
+import * as styles from './scss/main.scss';
 import { dateIsLocked, findNestedMonthItem } from './utils';
 
 export class Calendar extends LPCore {
@@ -14,21 +14,21 @@ export class Calendar extends LPCore {
     this.emit('before:render', this.ui);
 
     const mainBlock = document.createElement('div');
-    mainBlock.className = style.containerMain;
+    mainBlock.className = styles.containerMain;
     const months = document.createElement('div');
-    months.className = style.containerMonths;
+    months.className = styles.containerMonths;
 
-    if (style[`columns${this.options.numberOfColumns}`]) {
-      months.classList.remove(style.columns2, style.columns3, style.columns4);
-      months.classList.add(style[`columns${this.options.numberOfColumns}`]);
+    if (styles[`columns${this.options.numberOfColumns}`]) {
+      months.classList.remove(styles.columns2, styles.columns3, styles.columns4);
+      months.classList.add(styles[`columns${this.options.numberOfColumns}`]);
     }
 
     if (this.options.splitView) {
-      months.classList.add(style.splitView);
+      months.classList.add(styles.splitView);
     }
 
     if (this.options.showWeekNumbers) {
-      months.classList.add(style.showWeekNumbers);
+      months.classList.add(styles.showWeekNumbers);
     }
 
     const startDate = this.calendars[0].clone();
@@ -64,7 +64,7 @@ export class Calendar extends LPCore {
       } else {
         resetButton = document.createElement('button');
         resetButton.type = 'button';
-        resetButton.className = style.resetButton;
+        resetButton.className = styles.resetButton;
         resetButton.innerHTML = this.options.buttonText.reset;
       }
 
@@ -76,8 +76,8 @@ export class Calendar extends LPCore {
       });
 
       mainBlock
-        .querySelector(`.${style.monthItem}:last-child`)
-        .querySelector(`.${style.monthItemHeader}`)
+        .querySelector(`.${styles.monthItem}:last-child`)
+        .querySelector(`.${styles.monthItemHeader}`)
         .appendChild(resetButton);
     }
 
@@ -102,16 +102,16 @@ export class Calendar extends LPCore {
     const totalDays = 32 - new Date(startDate.getFullYear(), startDate.getMonth(), 32).getDate();
 
     const month = document.createElement('div');
-    month.className = style.monthItem;
+    month.className = styles.monthItem;
 
     const monthHeader = document.createElement('div');
-    monthHeader.className = style.monthItemHeader;
+    monthHeader.className = styles.monthItemHeader;
 
     const monthAndYear = document.createElement('div');
 
     if (this.options.dropdowns.months) {
       const selectMonths = document.createElement('select');
-      selectMonths.className = style.monthItemName;
+      selectMonths.className = styles.monthItemName;
 
       for (let x = 0; x < 12; x += 1) {
         const option = document.createElement('option');
@@ -136,7 +136,7 @@ export class Calendar extends LPCore {
         let idx = 0;
 
         if (this.options.splitView) {
-          const monthItem = target.closest(`.${style.monthItem}`);
+          const monthItem = target.closest(`.${styles.monthItem}`);
           idx = findNestedMonthItem(monthItem);
         }
 
@@ -149,14 +149,14 @@ export class Calendar extends LPCore {
       monthAndYear.appendChild(selectMonths);
     } else {
       const monthName = document.createElement('strong');
-      monthName.className = style.monthItemName;
+      monthName.className = styles.monthItemName;
       monthName.innerHTML = date.toLocaleString(this.options.lang, { month: 'long' });
       monthAndYear.appendChild(monthName);
     }
 
     if (this.options.dropdowns.years) {
       const selectYears = document.createElement('select');
-      selectYears.className = style.monthItemYear;
+      selectYears.className = styles.monthItemYear;
 
       const minYear = this.options.dropdowns.minYear;
       const maxYear = this.options.dropdowns.maxYear
@@ -213,7 +213,7 @@ export class Calendar extends LPCore {
         let idx = 0;
 
         if (this.options.splitView) {
-          const monthItem = target.closest(`.${style.monthItem}`);
+          const monthItem = target.closest(`.${styles.monthItem}`);
           idx = findNestedMonthItem(monthItem);
         }
 
@@ -226,42 +226,54 @@ export class Calendar extends LPCore {
       monthAndYear.appendChild(selectYears);
     } else {
       const monthYear = document.createElement('span');
-      monthYear.className = style.monthItemYear;
+      monthYear.className = styles.monthItemYear;
       monthYear.innerHTML = String(date.getFullYear());
       monthAndYear.appendChild(monthYear);
     }
 
+    const previousYearButton = document.createElement('button');
+    previousYearButton.type = 'button';
+    previousYearButton.className = styles.buttonPreviousYear;
+    previousYearButton.innerHTML = this.options.buttonText.previousYear;
+
     const previousMonthButton = document.createElement('button');
     previousMonthButton.type = 'button';
-    previousMonthButton.className = style.buttonPreviousMonth;
+    previousMonthButton.className = styles.buttonPreviousMonth;
     previousMonthButton.innerHTML = this.options.buttonText.previousMonth;
 
     const nextMonthButton = document.createElement('button');
     nextMonthButton.type = 'button';
-    nextMonthButton.className = style.buttonNextMonth;
+    nextMonthButton.className = styles.buttonNextMonth;
     nextMonthButton.innerHTML = this.options.buttonText.nextMonth;
 
+    const nextYearButton = document.createElement('button');
+    nextYearButton.type = 'button';
+    nextYearButton.className = styles.buttonNextYear;
+    nextYearButton.innerHTML = this.options.buttonText.nextYear;
+
+    monthHeader.appendChild(previousYearButton);
     monthHeader.appendChild(previousMonthButton);
     monthHeader.appendChild(monthAndYear);
     monthHeader.appendChild(nextMonthButton);
+    monthHeader.appendChild(nextYearButton);
 
     if (this.options.minDate
       && startDate.isSameOrBefore(new DateTime(this.options.minDate), 'month')) {
-      month.classList.add(style.noPreviousMonth);
+      month.classList.add(styles.noPreviousMonth);
     }
 
     if (this.options.maxDate
       && startDate.isSameOrAfter(new DateTime(this.options.maxDate), 'month')) {
-      month.classList.add(style.noNextMonth);
+      month.classList.add(styles.noNextMonth);
     }
 
     const weekdaysRow = document.createElement('div');
-    weekdaysRow.className = style.monthItemWeekdaysRow;
+    weekdaysRow.className = styles.monthItemWeekdaysRow;
 
     if (this.options.showWeekNumbers) {
       const weekNumbersHeader = document.createElement('div');
       weekNumbersHeader.innerText = "W."
-      weekNumbersHeader.className = style.monthItemWeekNumbersHeader;
+      weekNumbersHeader.className = styles.monthItemWeekNumbersHeader;
       weekdaysRow.appendChild(weekNumbersHeader);
     }
 
@@ -275,14 +287,14 @@ export class Calendar extends LPCore {
     }
 
     const days = document.createElement('div');
-    days.className = style.containerDays;
+    days.className = styles.containerDays;
 
     const skipDays = this.calcSkipDays(startDate);
 
     // tslint:disable-next-line: prefer-for-of
     let renderedWeekDays = 0
     let weekContainer = document.createElement('div')
-    weekContainer.className = style.weekItem;
+    weekContainer.className = styles.weekItem;
     for (let idx = 1 - skipDays; idx <= totalDays || (renderedWeekDays > 0 && renderedWeekDays < 7); idx += 1) {
       const wasTimestamp = startDate.getTime()
       startDate.setDate(idx);
@@ -294,7 +306,7 @@ export class Calendar extends LPCore {
       const rendered = this.renderDay(startDate)
       weekContainer.appendChild(rendered);
       if (idx < 1 || idx > totalDays) {
-        rendered.classList.add(style.adjacentMonthDayItem);
+        rendered.classList.add(styles.adjacentMonthDayItem);
       }
       renderedWeekDays++;
       startDate.setTime(wasTimestamp);
@@ -302,7 +314,7 @@ export class Calendar extends LPCore {
         days.appendChild(weekContainer)
         renderedWeekDays = 0;
         weekContainer = document.createElement('div');
-        weekContainer.className = style.weekItem;
+        weekContainer.className = styles.weekItem;
       }
     }
 
@@ -319,31 +331,31 @@ export class Calendar extends LPCore {
     date.setHours();
 
     const day = document.createElement('div');
-    day.className = style.dayItem;
+    day.className = styles.dayItem;
     day.innerHTML = String(date.getDate());
     day.dataset.time = String(date.getTime());
 
     if (date.toDateString() === (new Date()).toDateString()) {
-      day.classList.add(style.isToday);
+      day.classList.add(styles.isToday);
     }
 
     if (this.datePicked.length) {
       if (this.datePicked[0].toDateString() === date.toDateString()) {
-        day.classList.add(style.isStartDate);
+        day.classList.add(styles.isStartDate);
 
         if (this.options.singleMode) {
-          day.classList.add(style.isEndDate);
+          day.classList.add(styles.isEndDate);
         }
       }
 
       if (this.datePicked.length === 2
         && this.datePicked[1].toDateString() === date.toDateString()) {
-        day.classList.add(style.isEndDate);
+        day.classList.add(styles.isEndDate);
       }
 
       if (this.datePicked.length === 2) {
         if (date.isBetween(this.datePicked[0], this.datePicked[1])) {
-          day.classList.add(style.isInRange);
+          day.classList.add(styles.isInRange);
         }
       }
     } else if (this.options.startDate) {
@@ -351,30 +363,30 @@ export class Calendar extends LPCore {
       const endDate = this.options.endDate as DateTime;
 
       if (startDate.toDateString() === date.toDateString()) {
-        day.classList.add(style.isStartDate);
+        day.classList.add(styles.isStartDate);
 
         if (this.options.singleMode) {
-          day.classList.add(style.isEndDate);
+          day.classList.add(styles.isEndDate);
         }
       }
 
       if (endDate && endDate.toDateString() === date.toDateString()) {
-        day.classList.add(style.isEndDate);
+        day.classList.add(styles.isEndDate);
       }
 
       if (startDate && endDate) {
         if (date.isBetween(startDate, endDate)) {
-          day.classList.add(style.isInRange);
+          day.classList.add(styles.isInRange);
         }
       }
     }
 
     if (this.options.minDate && date.isBefore(new DateTime(this.options.minDate))) {
-      day.classList.add(style.isLocked);
+      day.classList.add(styles.isLocked);
     }
 
     if (this.options.maxDate && date.isAfter(new DateTime(this.options.maxDate))) {
-      day.classList.add(style.isLocked);
+      day.classList.add(styles.isLocked);
     }
 
     if (this.options.minDays > 1
@@ -384,11 +396,11 @@ export class Calendar extends LPCore {
       const right = this.datePicked[0].clone().add(minDays, 'day');
 
       if (date.isBetween(left, this.datePicked[0], '(]')) {
-        day.classList.add(style.isLocked);
+        day.classList.add(styles.isLocked);
       }
 
       if (date.isBetween(this.datePicked[0], right, '[)')) {
-        day.classList.add(style.isLocked);
+        day.classList.add(styles.isLocked);
       }
     }
 
@@ -399,30 +411,30 @@ export class Calendar extends LPCore {
       const right = this.datePicked[0].clone().add(maxDays, 'day');
 
       if (date.isSameOrBefore(left)) {
-        day.classList.add(style.isLocked);
+        day.classList.add(styles.isLocked);
       }
 
       if (date.isSameOrAfter(right)) {
-        day.classList.add(style.isLocked);
+        day.classList.add(styles.isLocked);
       }
     }
 
     if (this.options.selectForward
       && this.datePicked.length === 1
       && date.isBefore(this.datePicked[0])) {
-      day.classList.add(style.isLocked);
+      day.classList.add(styles.isLocked);
     }
 
     if (this.options.selectBackward
       && this.datePicked.length === 1
       && date.isAfter(this.datePicked[0])) {
-      day.classList.add(style.isLocked);
+      day.classList.add(styles.isLocked);
     }
 
     const locked = dateIsLocked(date, this.options, this.datePicked);
 
     if (locked) {
-      day.classList.add(style.isLocked);
+      day.classList.add(styles.isLocked);
     }
 
     if (this.options.highlightedDays.length) {
@@ -436,7 +448,7 @@ export class Calendar extends LPCore {
         }).length;
 
       if (isHighlighted) {
-        day.classList.add(style.isHighlighted);
+        day.classList.add(styles.isHighlighted);
       }
     }
 
@@ -450,33 +462,33 @@ export class Calendar extends LPCore {
 
   protected renderFooter() {
     const footer = document.createElement('div');
-    footer.className = style.containerFooter;
+    footer.className = styles.containerFooter;
 
     if (this.options.footerHTML) {
       footer.innerHTML = this.options.footerHTML;
     } else {
       footer.innerHTML = `
-      <span class="${style.previewDateRange}"></span>
-      <button type="button" class="${style.buttonCancel}">${this.options.buttonText.cancel}</button>
-      <button type="button" class="${style.buttonApply}">${this.options.buttonText.apply}</button>
+      <span class="${styles.previewDateRange}"></span>
+      <button type="button" class="${styles.buttonCancel}">${this.options.buttonText.cancel}</button>
+      <button type="button" class="${styles.buttonApply}">${this.options.buttonText.apply}</button>
       `;
     }
 
     if (this.options.singleMode) {
       if (this.datePicked.length === 1) {
         const startValue = this.datePicked[0].format(this.options.format, this.options.lang);
-        footer.querySelector(`.${style.previewDateRange}`).innerHTML = startValue;
+        footer.querySelector(`.${styles.previewDateRange}`).innerHTML = startValue;
       }
     } else {
       if (this.datePicked.length === 1) {
-        footer.querySelector(`.${style.buttonApply}`).setAttribute('disabled', '');
+        footer.querySelector(`.${styles.buttonApply}`).setAttribute('disabled', '');
       }
 
       if (this.datePicked.length === 2) {
         const startValue = this.datePicked[0].format(this.options.format, this.options.lang);
         const endValue = this.datePicked[1].format(this.options.format, this.options.lang);
 
-        footer.querySelector(`.${style.previewDateRange}`)
+        footer.querySelector(`.${styles.previewDateRange}`)
           .innerHTML = `${startValue}${this.options.delimiter}${endValue}`;
       }
     }
@@ -489,7 +501,7 @@ export class Calendar extends LPCore {
   protected renderWeekNumber(date: DateTime) {
     const wn = document.createElement('div');
     const week = date.getWeek(this.options.firstDay);
-    wn.className = style.weekNumber;
+    wn.className = styles.weekNumber;
     wn.innerHTML = String(week);
     wn.dataset.time = String(date.getTime());
     return wn;
@@ -497,7 +509,7 @@ export class Calendar extends LPCore {
 
   protected renderTooltip() {
     const t = document.createElement('div');
-    t.className = style.containerTooltip;
+    t.className = styles.containerTooltip;
 
     return t;
   }

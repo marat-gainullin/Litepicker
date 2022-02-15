@@ -230,6 +230,24 @@ export class Litepicker extends Calendar {
       return;
     }
 
+    // Click on button previous year
+    if (target.classList.contains(style.buttonPreviousYear)) {
+      e.preventDefault();
+
+      let idx = 0;
+
+      if (this.options.splitView) {
+        const monthItem = target.closest(`.${style.monthItem}`);
+        idx = findNestedMonthItem(monthItem);
+      }
+
+      this.calendars[idx].setFullYear(this.calendars[idx].getFullYear() - 1);
+      this.gotoDate(this.calendars[idx], idx);
+
+      this.emit('change:month', this.calendars[idx], idx);
+      return;
+    }
+
     // Click on button previous month
     if (target.classList.contains(style.buttonPreviousMonth)) {
       e.preventDefault();
@@ -264,6 +282,24 @@ export class Litepicker extends Calendar {
       }
 
       this.calendars[idx].setMonth(this.calendars[idx].getMonth() + numberOfMonths);
+      this.gotoDate(this.calendars[idx], idx);
+
+      this.emit('change:month', this.calendars[idx], idx);
+      return;
+    }
+
+    // Click on button next year
+    if (target.classList.contains(style.buttonNextYear)) {
+      e.preventDefault();
+
+      let idx = 0;
+
+      if (this.options.splitView) {
+        const monthItem = target.closest(`.${style.monthItem}`);
+        idx = findNestedMonthItem(monthItem);
+      }
+
+      this.calendars[idx].setFullYear(this.calendars[idx].getFullYear() + 1);
       this.gotoDate(this.calendars[idx], idx);
 
       this.emit('change:month', this.calendars[idx], idx);

@@ -74,8 +74,10 @@
       &.split-view {
         .month-item {
           &-header {
+            .button-previous-year,
             .button-previous-month,
-            .button-next-month {
+            .button-next-month,
+            .button-next-year {
               visibility: visible;
             }
           }
@@ -128,8 +130,10 @@
             }
           }
 
+          .button-previous-year,
           .button-previous-month,
-          .button-next-month {
+          .button-next-month,
+          .button-next-year {
             visibility: hidden;
             text-decoration: none;
             padding: 3px 5px;
@@ -141,6 +145,7 @@
               pointer-events: none;
             }
           }
+          .button-previous-year,
           .button-previous-month {
             color: var(--litepicker-button-prev-month-color);
 
@@ -157,7 +162,8 @@
               }
             }
           }
-          .button-next-month {
+          .button-next-month,
+          .button-next-year {
             color: var(--litepicker-button-next-month-color);
 
             > svg,
@@ -195,14 +201,22 @@
         }
 
         &:first-child {
+          .button-previous-year,
           .button-previous-month {
             visibility: visible;
           }
         }
 
         &:last-child {
-          .button-next-month {
+          .button-next-month,
+            .button-next-year {
             visibility: visible;
+          }
+        }
+
+        &.no-previous-year {
+          .button-previous-year {
+            visibility: hidden;
           }
         }
 
@@ -214,6 +228,12 @@
 
         &.no-next-month {
           .button-next-month {
+            visibility: hidden;
+          }
+        }
+
+        &.no-next-year {
+          .button-next-year {
             visibility: hidden;
           }
         }

@@ -11,8 +11,10 @@ interface ILPOptionDropdowns {
 interface ILPOptionButtonText {
   apply: string;
   cancel: string;
+  previousYear: string;
   previousMonth: string;
   nextMonth: string;
+  nextYear: string;
   reset: string;
 }
 
