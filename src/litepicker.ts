@@ -413,6 +413,7 @@ export class Litepicker extends Calendar {
         date2 = tempDate.clone();
         isFlipped = true;
       }
+
       const allDayItems = Array.prototype.slice.call(this.ui.querySelectorAll(`.${styles.dayItem}`));
       allDayItems.forEach((d: HTMLElement) => {
         const date = new DateTime(d.dataset.time);
@@ -421,9 +422,23 @@ export class Litepicker extends Calendar {
         if (date.isBetween(date1, date2)) {
           day.classList.add(styles.isInRange);
         }
-        if(date.getTime() == date2.getTime()) {
-          day.classList.add(styles.isEndDate);
+        if (isFlipped) {
+          day.classList.add(styles.isFlipped);
+          if(date.getTime() == date1.getTime()) {
+            day.classList.add(styles.isEndDate);
+          }
+          if(date.getTime() == date2.getTime()) {
+            day.classList.add(styles.isStartDate);
+          }
+        } else {
+          if(date.getTime() == date1.getTime()) {
+            day.classList.add(styles.isStartDate);
+          }
+          if(date.getTime() == date2.getTime()) {
+            day.classList.add(styles.isEndDate);
+          }
         }
+
         d.className = day.className;
       });
 
@@ -433,7 +448,6 @@ export class Litepicker extends Calendar {
         if (startDateElement) {
           startDateElement.classList.add(styles.isFlipped);
         }
-
         target.classList.add(styles.isFlipped);
       } else {
         if (startDateElement) {
