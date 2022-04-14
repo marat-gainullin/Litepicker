@@ -1,7 +1,7 @@
 import { Calendar } from './calendar';
 import { DateTime } from './datetime';
 import { ILPConfiguration } from './interfaces';
-import * as style from './scss/main.scss';
+import * as styles from './scss/main.scss';
 import {
   findNestedMonthItem,
   rangeIsLocked,
@@ -42,7 +42,7 @@ export class Litepicker extends Calendar {
     document.addEventListener('click', this.onClick.bind(this), true);
 
     this.ui = document.createElement('div');
-    this.ui.className = style.litepicker;
+    this.ui.className = styles.litepicker;
     this.ui.style.display = 'none';
     this.ui.addEventListener('mouseenter', this.onMouseEnter.bind(this), true);
     this.ui.addEventListener('mouseleave', this.onMouseLeave.bind(this), false);
@@ -126,7 +126,7 @@ export class Litepicker extends Calendar {
   }
 
   private isSamePicker(el) {
-    const picker = el.closest(`.${style.litepicker}`);
+    const picker = el.closest(`.${styles.litepicker}`);
 
     return picker === this.ui;
   }
@@ -168,7 +168,7 @@ export class Litepicker extends Calendar {
     }
 
     // Click outside picker
-    if (!target.closest(`.${style.litepicker}`) && this.isShowning()) {
+    if (!target.closest(`.${styles.litepicker}`) && this.isShowning()) {
       this.hide();
       return;
     }
@@ -185,10 +185,10 @@ export class Litepicker extends Calendar {
     }
 
     // Click on date
-    if (target.classList.contains(style.dayItem)) {
+    if (target.classList.contains(styles.dayItem)) {
       e.preventDefault();
 
-      if (target.classList.contains(style.isLocked)) {
+      if (target.classList.contains(styles.isLocked)) {
         return;
       }
 
@@ -231,13 +231,13 @@ export class Litepicker extends Calendar {
     }
 
     // Click on button previous year
-    if (target.classList.contains(style.buttonPreviousYear)) {
+    if (target.classList.contains(styles.buttonPreviousYear)) {
       e.preventDefault();
 
       let idx = 0;
 
       if (this.options.splitView) {
-        const monthItem = target.closest(`.${style.monthItem}`);
+        const monthItem = target.closest(`.${styles.monthItem}`);
         idx = findNestedMonthItem(monthItem);
       }
 
@@ -249,14 +249,14 @@ export class Litepicker extends Calendar {
     }
 
     // Click on button previous month
-    if (target.classList.contains(style.buttonPreviousMonth)) {
+    if (target.classList.contains(styles.buttonPreviousMonth)) {
       e.preventDefault();
 
       let idx = 0;
       let numberOfMonths = this.options.switchingMonths || this.options.numberOfMonths;
 
       if (this.options.splitView) {
-        const monthItem = target.closest(`.${style.monthItem}`);
+        const monthItem = target.closest(`.${styles.monthItem}`);
         idx = findNestedMonthItem(monthItem);
         numberOfMonths = 1;
       }
@@ -269,14 +269,14 @@ export class Litepicker extends Calendar {
     }
 
     // Click on button next month
-    if (target.classList.contains(style.buttonNextMonth)) {
+    if (target.classList.contains(styles.buttonNextMonth)) {
       e.preventDefault();
 
       let idx = 0;
       let numberOfMonths = this.options.switchingMonths || this.options.numberOfMonths;
 
       if (this.options.splitView) {
-        const monthItem = target.closest(`.${style.monthItem}`);
+        const monthItem = target.closest(`.${styles.monthItem}`);
         idx = findNestedMonthItem(monthItem);
         numberOfMonths = 1;
       }
@@ -289,13 +289,13 @@ export class Litepicker extends Calendar {
     }
 
     // Click on button next year
-    if (target.classList.contains(style.buttonNextYear)) {
+    if (target.classList.contains(styles.buttonNextYear)) {
       e.preventDefault();
 
       let idx = 0;
 
       if (this.options.splitView) {
-        const monthItem = target.closest(`.${style.monthItem}`);
+        const monthItem = target.closest(`.${styles.monthItem}`);
         idx = findNestedMonthItem(monthItem);
       }
 
@@ -307,7 +307,7 @@ export class Litepicker extends Calendar {
     }
 
     // Click on button cancel
-    if (target.classList.contains(style.buttonCancel)) {
+    if (target.classList.contains(styles.buttonCancel)) {
       e.preventDefault();
 
       this.hide();
@@ -316,7 +316,7 @@ export class Litepicker extends Calendar {
     }
 
     // Click on button apply
-    if (target.classList.contains(style.buttonApply)) {
+    if (target.classList.contains(styles.buttonApply)) {
       e.preventDefault();
 
       if (this.options.singleMode && this.datePicked.length) {
@@ -332,7 +332,7 @@ export class Litepicker extends Calendar {
   }
 
   private showTooltip(element, text) {
-    const tooltip = this.ui.querySelector(`.${style.containerTooltip}`) as HTMLElement;
+    const tooltip = this.ui.querySelector(`.${styles.containerTooltip}`) as HTMLElement;
     tooltip.style.visibility = 'visible';
     tooltip.innerHTML = text;
 
@@ -362,13 +362,13 @@ export class Litepicker extends Calendar {
   }
 
   private hideTooltip() {
-    const tooltip = this.ui.querySelector(`.${style.containerTooltip}`) as HTMLElement;
+    const tooltip = this.ui.querySelector(`.${styles.containerTooltip}`) as HTMLElement;
     tooltip.style.visibility = 'hidden';
   }
 
   private shouldAllowMouseEnter(el: HTMLElement) {
     return !this.options.singleMode
-      && !el.classList.contains(style.isLocked);
+      && !el.classList.contains(styles.isLocked);
   }
 
   private shouldAllowRepick() {
@@ -379,7 +379,7 @@ export class Litepicker extends Calendar {
   }
 
   private isDayItem(el: HTMLElement) {
-    return el.classList.contains(style.dayItem);
+    return el.classList.contains(styles.dayItem);
   }
 
   private onMouseEnter(event) {
@@ -402,7 +402,7 @@ export class Litepicker extends Calendar {
       }
 
       const startDateElement = this.ui
-        .querySelector(`.${style.dayItem}[data-time="${this.datePicked[0].getTime()}"]`);
+        .querySelector(`.${styles.dayItem}[data-time="${this.datePicked[0].getTime()}"]`);
       let date1 = this.datePicked[0].clone();
       let date2 = new DateTime(target.dataset.time);
       let isFlipped = false;
@@ -413,31 +413,33 @@ export class Litepicker extends Calendar {
         date2 = tempDate.clone();
         isFlipped = true;
       }
-      const allDayItems = Array.prototype.slice.call(this.ui.querySelectorAll(`.${style.dayItem}`));
+      const allDayItems = Array.prototype.slice.call(this.ui.querySelectorAll(`.${styles.dayItem}`));
       allDayItems.forEach((d: HTMLElement) => {
         const date = new DateTime(d.dataset.time);
         const day = this.renderDay(date);
 
         if (date.isBetween(date1, date2)) {
-          day.classList.add(style.isInRange);
+          day.classList.add(styles.isInRange);
         }
-
+        if(date.getTime() == date2.getTime()) {
+          day.classList.add(styles.isEndDate);
+        }
         d.className = day.className;
       });
 
-      target.classList.add(style.isEndDate);
+      target.classList.add(styles.isEndDate);
 
       if (isFlipped) {
         if (startDateElement) {
-          startDateElement.classList.add(style.isFlipped);
+          startDateElement.classList.add(styles.isFlipped);
         }
 
-        target.classList.add(style.isFlipped);
+        target.classList.add(styles.isFlipped);
       } else {
         if (startDateElement) {
-          startDateElement.classList.remove(style.isFlipped);
+          startDateElement.classList.remove(styles.isFlipped);
         }
-        target.classList.remove(style.isFlipped);
+        target.classList.remove(styles.isFlipped);
       }
 
       if (this.options.showTooltip) {
