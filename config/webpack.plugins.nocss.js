@@ -12,7 +12,7 @@ module.exports = {
     'plugins/multiselect.js': path.join(__dirname, '../src/plugins/multiselect/index.js'),
   },
   output: {
-    path: path.join(__dirname, '../dist/nocss/'),
+    path: path.join(__dirname, '../dist/nocss'),
     filename: '[name]'
   },
 

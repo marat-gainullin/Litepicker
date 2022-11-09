@@ -10,6 +10,7 @@
     "nocss": "webpack --config config/webpack.nocss.js",
     "plugins": "webpack --config config/webpack.plugins.js && webpack --config config/webpack.plugins.nocss.js",
     "watch": "webpack -w --config config/webpack.dev.js",
+    "lib:prod": "rimraf ./dist && webpack --config config/webpack.prod.js && webpack --config config/webpack.plugins.js && npm publish",
     "test": "jest"
   },
   "keywords": [
@@ -61,6 +62,7 @@
     "tslint": "^5.20.1",
     "tslint-config-airbnb": "^5.11.2",
     "typescript": "^3.7.2",
+    "rimraf": "^3.0.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
     "webpack-merge": "^4.2.2"

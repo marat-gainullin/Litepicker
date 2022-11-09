@@ -11,13 +11,13 @@ export class Litepicker extends Calendar {
   public preventClick: boolean = false;
   protected triggerElement;
   protected backdrop;
+  private lastMouseEnteredDay: HTMLElement;
 
   constructor(options: ILPConfiguration) {
     super(options);
-    //
-
     this.bindEvents();
   }
+
   protected scrollToDate(el) {
     if (this.options.scrollToDate) {
       // tslint:disable-next-line: max-line-length
@@ -46,6 +46,10 @@ export class Litepicker extends Calendar {
     this.ui.style.display = 'none';
     this.ui.addEventListener('mouseenter', this.onMouseEnter.bind(this), true);
     this.ui.addEventListener('mouseleave', this.onMouseLeave.bind(this), false);
+    if (!this.options.singleMode && this.options.dragRange) {
+      this.ui.addEventListener('mousedown', this.onMouseDown.bind(this), true);
+      this.ui.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+    }
 
     if (this.options.autoRefresh) {
       if (this.options.element instanceof HTMLElement) {
@@ -150,6 +154,57 @@ export class Litepicker extends Calendar {
       && this.datePicked.length === 2;
   }
 
+  private showTooltip(element: HTMLElement, text: string) {
+    const tooltip = this.ui.querySelector(`.${styles.containerTooltip}`) as HTMLElement;
+    tooltip.style.visibility = 'visible';
+    tooltip.innerHTML = text;
+
+    const pickerBCR = this.ui.getBoundingClientRect();
+    const tooltipBCR = tooltip.getBoundingClientRect();
+    const dayBCR = element.getBoundingClientRect();
+    let top = dayBCR.top;
+    let left = dayBCR.left;
+
+    if (this.options.inlineMode && this.options.parentEl) {
+      const parentBCR = (this.ui.parentNode as HTMLElement).getBoundingClientRect();
+      top -= parentBCR.top;
+      left -= parentBCR.left;
+    } else {
+      top -= pickerBCR.top;
+      left -= pickerBCR.left;
+    }
+
+    top -= tooltipBCR.height;
+    left -= tooltipBCR.width / 2;
+    left += dayBCR.width / 2;
+
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+
+    this.emit('tooltip', tooltip, element);
+  }
+
+  private hideTooltip() {
+    const tooltip = this.ui.querySelector(`.${styles.containerTooltip}`) as HTMLElement;
+    tooltip.style.visibility = 'hidden';
+  }
+
+  private shouldAllowMouseEnter(el: HTMLElement) {
+    return !this.options.singleMode
+      && !el.classList.contains(styles.isLocked);
+  }
+
+  private shouldAllowRepick() {
+    return this.options.elementEnd
+      && this.options.allowRepick
+      && this.options.startDate
+      && this.options.endDate;
+  }
+
+  private isDayItem(el: HTMLElement) {
+    return el.classList.contains(styles.dayItem);
+  }
+
   private onClick(e) {
     let target = e.target as HTMLElement;
 
@@ -185,7 +240,7 @@ export class Litepicker extends Calendar {
     }
 
     // Click on date
-    if (target.classList.contains(styles.dayItem)) {
+    if (target.classList.contains(styles.dayItem) && (this.options.singleMode || !this.options.dragRange)) {
       e.preventDefault();
 
       if (target.classList.contains(styles.isLocked)) {
@@ -196,7 +251,7 @@ export class Litepicker extends Calendar {
         this.datePicked.length = 0;
       }
 
-      this.datePicked[this.datePicked.length] = new DateTime(target.dataset.time);
+      this.datePicked.push(new DateTime(target.dataset.time));
 
       if (this.shouldSwapDatePicked()) {
         const tempDate = this.datePicked[1].clone();
@@ -218,13 +273,15 @@ export class Litepicker extends Calendar {
 
       this.emit('preselect', ...[...this.datePicked].map(d => d.clone()));
 
-      if (this.options.autoApply) {
-        if (this.options.singleMode && this.datePicked.length) {
+      if (this.options.autoApply && this.datePicked.length > 0) {
+        if (this.options.singleMode) {
           this.setDate(this.datePicked[0]);
           this.hide();
-        } else if (!this.options.singleMode && this.datePicked.length === 2) {
-          this.setDateRange(this.datePicked[0], this.datePicked[1]);
-          this.hide();
+        } else {
+          if (this.datePicked.length === 2) {
+            this.setDateRange(this.datePicked[0], this.datePicked[1]);
+            this.hide();
+          }
         }
       }
       return;
@@ -331,58 +388,90 @@ export class Litepicker extends Calendar {
     }
   }
 
-  private showTooltip(element, text) {
-    const tooltip = this.ui.querySelector(`.${styles.containerTooltip}`) as HTMLElement;
-    tooltip.style.visibility = 'visible';
-    tooltip.innerHTML = text;
+  private onMouseDown(e: MouseEvent) {
+    let target = e.target as HTMLElement;
 
-    const pickerBCR = this.ui.getBoundingClientRect();
-    const tooltipBCR = tooltip.getBoundingClientRect();
-    const dayBCR = element.getBoundingClientRect();
-    let top = dayBCR.top;
-    let left = dayBCR.left;
-
-    if (this.options.inlineMode && this.options.parentEl) {
-      const parentBCR = (this.ui.parentNode as HTMLElement).getBoundingClientRect();
-      top -= parentBCR.top;
-      left -= parentBCR.left;
-    } else {
-      top -= pickerBCR.top;
-      left -= pickerBCR.left;
+    if ((e.target as any).shadowRoot) {
+      target = e.composedPath()[0] as HTMLElement;
     }
 
-    top -= tooltipBCR.height;
-    left -= tooltipBCR.width / 2;
-    left += dayBCR.width / 2;
+    if (!target || !this.ui) {
+      return;
+    }
 
-    tooltip.style.top = `${top}px`;
-    tooltip.style.left = `${left}px`;
+    // Mouse down on date
+    if (
+      !this.options.singleMode && this.options.dragRange &&
+      target.classList.contains(styles.dayItem) &&
+      !target.classList.contains(styles.isLocked)
+    ) {
+      //e.preventDefault();
 
-    this.emit('tooltip', tooltip, element);
+      if (this.shouldResetDatePicked()) {
+        this.datePicked.length = 0;
+      }
+
+      if (this.datePicked.length == 0) {
+        this.datePicked.push(new DateTime(target.dataset.time));
+        this.render();
+      }
+    }
   }
 
-  private hideTooltip() {
-    const tooltip = this.ui.querySelector(`.${styles.containerTooltip}`) as HTMLElement;
-    tooltip.style.visibility = 'hidden';
+  private onMouseUp(e: MouseEvent) {
+    let target = e.target as HTMLElement;
+
+    if ((e.target as any).shadowRoot) {
+      target = e.composedPath()[0] as HTMLElement;
+    }
+
+    if (!target || !this.ui) {
+      return;
+    }
+
+    // Mouse up on date
+    if (
+      !this.options.singleMode && this.options.dragRange &&
+      //target.classList.contains(styles.containerDays) &&
+      //target.classList.contains(styles.dayItem) &&
+      this.lastMouseEnteredDay != null &&
+      this.datePicked.length == 1
+    ) {
+      if (!this.lastMouseEnteredDay.classList.contains(styles.isLocked)) {
+        //e.preventDefault();
+
+        this.datePicked.push(new DateTime(this.lastMouseEnteredDay.dataset.time));
+        this.lastMouseEnteredDay = null
+
+        if (this.shouldSwapDatePicked()) {
+          const tempDate = this.datePicked[1].clone();
+          this.datePicked[1] = this.datePicked[0].clone();
+          this.datePicked[0] = tempDate.clone();
+        }
+
+        if (this.shouldCheckLockDays()) {
+          const locked = rangeIsLocked(this.datePicked, this.options);
+
+          if (locked) {
+            this.emit('error:range', this.datePicked);
+
+            this.datePicked.length = 0;
+          }
+        }
+
+        this.render();
+
+        this.emit('preselect', ...[...this.datePicked].map(d => d.clone()));
+
+        if (this.options.autoApply) {
+          this.setDateRange(this.datePicked[0], this.datePicked[1]);
+          this.hide();
+        }
+      }
+    }
   }
 
-  private shouldAllowMouseEnter(el: HTMLElement) {
-    return !this.options.singleMode
-      && !el.classList.contains(styles.isLocked);
-  }
-
-  private shouldAllowRepick() {
-    return this.options.elementEnd
-      && this.options.allowRepick
-      && this.options.startDate
-      && this.options.endDate;
-  }
-
-  private isDayItem(el: HTMLElement) {
-    return el.classList.contains(styles.dayItem);
-  }
-
-  private onMouseEnter(event) {
+  private onMouseEnter(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (!this.isDayItem(target)) {
       return;
@@ -443,6 +532,7 @@ export class Litepicker extends Calendar {
       });
 
       target.classList.add(styles.isEndDate);
+      this.lastMouseEnteredDay = target
 
       if (isFlipped) {
         if (startDateElement) {
@@ -486,7 +576,7 @@ export class Litepicker extends Calendar {
     }
   }
 
-  private onMouseLeave(event) {
+  private onMouseLeave(event: MouseEvent) {
     const target = event.target as any;
 
     if (!this.options.allowRepick

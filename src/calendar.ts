@@ -281,7 +281,7 @@ export class Calendar extends LPCore {
       // 7 days, 4 is «Thursday» (new Date(1970, 0, 1, 12, 0, 0, 0))
       const dayIdx = 7 - 4 + this.options.firstDay + w;
       const weekday = document.createElement('div');
-      weekday.innerHTML = `${this.weekdayName(dayIdx)}.`; // Since this is a shortend name. It shoudl end with dot
+      weekday.innerHTML = `${this.weekdayName(dayIdx)}.`; // Since this is a shortend name. It should end with dot
       weekday.title = this.weekdayName(dayIdx, 'long');
       weekdaysRow.appendChild(weekday);
     }
