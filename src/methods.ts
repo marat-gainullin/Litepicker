@@ -32,7 +32,7 @@ Litepicker.prototype.show = function (el = null) {
   const element = el ? el : this.options.element;
   this.triggerElement = element;
 
-  if (this.isShowning()) {
+  if (this.isShowing()) {
     return;
   }
 
@@ -65,15 +65,16 @@ Litepicker.prototype.show = function (el = null) {
 };
 
 Litepicker.prototype.hide = function () {
-  if (!this.isShowning()) {
+  if (!this.isShowing()) {
     return;
   }
 
   this.datePicked.length = 0;
   this.updateInput();
 
+  this.hideTooltip()
+
   if (this.options.inlineMode) {
-    this.render();
     return;
   }
 
@@ -145,6 +146,7 @@ Litepicker.prototype.setEndDate = function (date) {
     this.options.lang,
   );
 
+  let isFlipped = false
   if (this.options.startDate.getTime() > this.options.endDate.getTime()) {
     this.options.endDate = this.options.startDate.clone();
     this.options.startDate = new DateTime(
@@ -152,7 +154,9 @@ Litepicker.prototype.setEndDate = function (date) {
       this.options.format,
       this.options.lang,
     );
+    isFlipped = true
   }
+  this.rerenderDays(this.options.startDate, this.options.endDate, isFlipped)
 
   this.updateInput();
 };
@@ -184,11 +188,6 @@ Litepicker.prototype.setDateRange = function (date1, date2, force: boolean = fal
   } else {
     this.setStartDate(d1);
     this.setEndDate(d2);
-
-    if (this.options.inlineMode) {
-      this.render();
-    }
-
     this.updateInput();
 
     this.emit('selected', this.getStartDate(), this.getEndDate());
@@ -298,7 +297,7 @@ Litepicker.prototype.clearSelection = function () {
 
   this.updateInput();
 
-  if (this.isShowning()) {
+  if (this.isShowing()) {
     this.render();
   }
 

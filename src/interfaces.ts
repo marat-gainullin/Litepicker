@@ -50,6 +50,7 @@ export interface ILPConfiguration {
   autoApply?: boolean;
   allowRepick?: boolean;
   dragRange?: boolean;
+  clickRange?: boolean;
   showWeekNumbers?: boolean;
   showTooltip?: boolean;
   scrollToDate?: boolean;

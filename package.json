@@ -1,6 +1,6 @@
 {
   "name": "litepicker",
-  "version": "2.0.14",
+  "version": "2.0.18",
   "description": "Date range picker - lightweight, no dependencies",
   "main": "./dist/litepicker.umd.js",
   "types": "./dist/types/index.d.ts",
@@ -10,7 +10,7 @@
     "nocss": "webpack --config config/webpack.nocss.js",
     "plugins": "webpack --config config/webpack.plugins.js && webpack --config config/webpack.plugins.nocss.js",
     "watch": "webpack -w --config config/webpack.dev.js",
-    "lib:prod": "rimraf ./dist && webpack --config config/webpack.prod.js && webpack --config config/webpack.plugins.js && npm publish",
+    "lib:prod": "rimraf ./dist && webpack --config config/webpack.prod.js && webpack --config config/webpack.plugins.js && npm publish --dry-run",
     "test": "jest"
   },
   "keywords": [

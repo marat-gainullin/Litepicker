@@ -18,26 +18,6 @@ export class Litepicker extends Calendar {
     this.bindEvents();
   }
 
-  protected scrollToDate(el) {
-    if (this.options.scrollToDate) {
-      // tslint:disable-next-line: max-line-length
-      const startDate = this.options.startDate instanceof DateTime ? this.options.startDate.clone() : null;
-      // tslint:disable-next-line: max-line-length
-      const endDate = this.options.endDate instanceof DateTime ? this.options.endDate.clone() : null;
-
-      if (this.options.startDate && (!el || el === this.options.element)) {
-        startDate.setDate(1);
-        this.calendars[0] = startDate.clone();
-      } else if (el && this.options.endDate && el === this.options.elementEnd) {
-        endDate.setDate(1);
-        if (this.options.numberOfMonths > 1 && endDate.isAfter(startDate)) {
-          endDate.setMonth(endDate.getMonth() - (this.options.numberOfMonths - 1));
-        }
-        this.calendars[0] = endDate.clone();
-      }
-    }
-  }
-
   private bindEvents() {
     document.addEventListener('click', this.onClick.bind(this), true);
 
@@ -45,7 +25,6 @@ export class Litepicker extends Calendar {
     this.ui.className = styles.litepicker;
     this.ui.style.display = 'none';
     this.ui.addEventListener('mouseenter', this.onMouseEnter.bind(this), true);
-    this.ui.addEventListener('mouseleave', this.onMouseLeave.bind(this), false);
     if (!this.options.singleMode && this.options.dragRange) {
       this.ui.addEventListener('mousedown', this.onMouseDown.bind(this), true);
       this.ui.addEventListener('mouseup', this.onMouseUp.bind(this), false);
@@ -97,6 +76,26 @@ export class Litepicker extends Calendar {
 
     if (this.options.inlineMode) {
       this.show();
+    }
+  }
+
+  protected scrollToDate(el) {
+    if (this.options.scrollToDate) {
+      // tslint:disable-next-line: max-line-length
+      const startDate = this.options.startDate instanceof DateTime ? this.options.startDate.clone() : null;
+      // tslint:disable-next-line: max-line-length
+      const endDate = this.options.endDate instanceof DateTime ? this.options.endDate.clone() : null;
+
+      if (this.options.startDate && (!el || el === this.options.element)) {
+        startDate.setDate(1);
+        this.calendars[0] = startDate.clone();
+      } else if (el && this.options.endDate && el === this.options.elementEnd) {
+        endDate.setDate(1);
+        if (this.options.numberOfMonths > 1 && endDate.isAfter(startDate)) {
+          endDate.setMonth(endDate.getMonth() - (this.options.numberOfMonths - 1));
+        }
+        this.calendars[0] = endDate.clone();
+      }
     }
   }
 
@@ -205,10 +204,56 @@ export class Litepicker extends Calendar {
     return el.classList.contains(styles.dayItem);
   }
 
-  private onClick(e) {
+  private datesBoundsOf(date1: DateTime, date2: DateTime): any[] {
+    let isFlipped = false;
+
+    if (date1.getTime() > date2.getTime()) {
+      const tempDate = date1.clone();
+      date1 = date2.clone();
+      date2 = tempDate.clone();
+      isFlipped = true;
+    }
+    return [date1, date2, isFlipped]
+  }
+
+  private rerenderDays(date1: DateTime, date2: DateTime, isFlipped: boolean) {
+    const allDayItems = Array.prototype.slice.call(this.ui.querySelectorAll(`.${styles.dayItem}`));
+    allDayItems.forEach((d: HTMLElement) => {
+      const date = new DateTime(d.dataset.time);
+      const day = this.renderDay(date);
+
+      if (date1 != null && date2 != null && date.isBetween(date1, date2)) {
+        day.classList.add(styles.isInRange);
+      }
+      if (isFlipped) {
+        day.classList.add(styles.isFlipped);
+        if(date1 != null && date.getTime() == date1.getTime()) {
+          day.classList.add(styles.isEndDate);
+        }
+        if(date2 != null && date.getTime() == date2.getTime()) {
+          day.classList.add(styles.isStartDate);
+        }
+      } else {
+        if(date1 != null && date.getTime() == date1.getTime()) {
+          day.classList.add(styles.isStartDate);
+        }
+        if(date2 != null && date.getTime() == date2.getTime()) {
+          day.classList.add(styles.isEndDate);
+        }
+      }
+      if (d.classList.contains(styles.adjacentMonthDayItem)) {
+        d.className = day.className;
+        d.classList.add(styles.adjacentMonthDayItem);
+      } else {
+        d.className = day.className;
+      }
+    });
+  }
+
+  private onClick(e: MouseEvent) {
     let target = e.target as HTMLElement;
 
-    if (e.target.shadowRoot) {
+    if ((e.target as any).shadowRoot) {
       target = e.composedPath()[0] as HTMLElement;
     }
 
@@ -223,7 +268,7 @@ export class Litepicker extends Calendar {
     }
 
     // Click outside picker
-    if (!target.closest(`.${styles.litepicker}`) && this.isShowning()) {
+    if (!target.closest(`.${styles.litepicker}`) && this.isShowing()) {
       this.hide();
       return;
     }
@@ -240,56 +285,72 @@ export class Litepicker extends Calendar {
     }
 
     // Click on date
-    if (target.classList.contains(styles.dayItem) && (this.options.singleMode || !this.options.dragRange)) {
-      e.preventDefault();
+    if (target.classList.contains(styles.dayItem)) {
+      if (this.options.singleMode || this.options.clickRange) {
+        e.preventDefault();
 
-      if (target.classList.contains(styles.isLocked)) {
-        return;
-      }
+        if (target.classList.contains(styles.isLocked)) {
+          return;
+        }
 
-      if (this.shouldResetDatePicked()) {
-        this.datePicked.length = 0;
-      }
-
-      this.datePicked.push(new DateTime(target.dataset.time));
-
-      if (this.shouldSwapDatePicked()) {
-        const tempDate = this.datePicked[1].clone();
-        this.datePicked[1] = this.datePicked[0].clone();
-        this.datePicked[0] = tempDate.clone();
-      }
-
-      if (this.shouldCheckLockDays()) {
-        const locked = rangeIsLocked(this.datePicked, this.options);
-
-        if (locked) {
-          this.emit('error:range', this.datePicked);
-
+        if (this.shouldResetDatePicked()) {
           this.datePicked.length = 0;
         }
-      }
 
-      this.render();
+        this.datePicked.push(new DateTime(target.dataset.time));
 
-      this.emit('preselect', ...[...this.datePicked].map(d => d.clone()));
+        if (this.shouldSwapDatePicked()) {
+          const tempDate = this.datePicked[1].clone();
+          this.datePicked[1] = this.datePicked[0].clone();
+          this.datePicked[0] = tempDate.clone();
+        }
 
-      if (this.options.autoApply && this.datePicked.length > 0) {
-        if (this.options.singleMode) {
-          this.setDate(this.datePicked[0]);
-          this.hide();
-        } else {
-          if (this.datePicked.length === 2) {
-            this.setDateRange(this.datePicked[0], this.datePicked[1]);
-            this.hide();
+        if (this.shouldCheckLockDays()) {
+          const locked = rangeIsLocked(this.datePicked, this.options);
+
+          if (locked) {
+            this.emit('error:range', this.datePicked);
+
+            this.datePicked.length = 0;
           }
         }
+
+        this.render();
+
+        this.emit('preselect', ...[...this.datePicked].map(d => d.clone()));
+
+        if (this.options.autoApply && this.datePicked.length > 0) {
+          if (this.options.singleMode) {
+            this.setDate(this.datePicked[0]);
+            this.hide();
+          } else if (this.datePicked.length === 2) {
+            this.setDateRange(this.datePicked[0], this.datePicked[1]);
+            this.hide();
+          } else {
+            e.stopPropagation()
+          }
+        } else {
+          e.stopPropagation()
+        }
+      } else {
+        e.stopPropagation()
       }
+      return;
+    }
+
+    // Click on week number
+    if (target.classList.contains(styles.weekNumber)) {
+      const startOfWeek = this.startOfWeek(new Date(parseInt(target.dataset.time)))
+      const endOfWeek = this.endOfWeek(startOfWeek)
+      this.setDateRange(startOfWeek, endOfWeek);
+      this.hide();
       return;
     }
 
     // Click on button previous year
     if (target.classList.contains(styles.buttonPreviousYear)) {
       e.preventDefault();
+      e.stopPropagation()
 
       let idx = 0;
 
@@ -308,6 +369,7 @@ export class Litepicker extends Calendar {
     // Click on button previous month
     if (target.classList.contains(styles.buttonPreviousMonth)) {
       e.preventDefault();
+      e.stopPropagation()
 
       let idx = 0;
       let numberOfMonths = this.options.switchingMonths || this.options.numberOfMonths;
@@ -328,6 +390,7 @@ export class Litepicker extends Calendar {
     // Click on button next month
     if (target.classList.contains(styles.buttonNextMonth)) {
       e.preventDefault();
+      e.stopPropagation()
 
       let idx = 0;
       let numberOfMonths = this.options.switchingMonths || this.options.numberOfMonths;
@@ -348,6 +411,7 @@ export class Litepicker extends Calendar {
     // Click on button next year
     if (target.classList.contains(styles.buttonNextYear)) {
       e.preventDefault();
+      e.stopPropagation()
 
       let idx = 0;
 
@@ -370,6 +434,7 @@ export class Litepicker extends Calendar {
       this.hide();
 
       this.emit('button:cancel');
+      return;
     }
 
     // Click on button apply
@@ -385,10 +450,19 @@ export class Litepicker extends Calendar {
       this.hide();
 
       this.emit('button:apply', this.options.startDate, this.options.endDate);
+      return;
+    }
+
+    // Click on rest inside calendar
+    if (target.closest(`.${styles.containerMonths}`)) {
+      e.stopPropagation();
+      return;
     }
   }
 
   private onMouseDown(e: MouseEvent) {
+    this.lastMouseEnteredDay = null
+
     let target = e.target as HTMLElement;
 
     if ((e.target as any).shadowRoot) {
@@ -413,7 +487,8 @@ export class Litepicker extends Calendar {
 
       if (this.datePicked.length == 0) {
         this.datePicked.push(new DateTime(target.dataset.time));
-        this.render();
+        this.lastMouseEnteredDay = target
+        this.rerenderDays(this.datePicked[0].clone(), this.datePicked[0].clone(), false)
       }
     }
   }
@@ -440,32 +515,49 @@ export class Litepicker extends Calendar {
       if (!this.lastMouseEnteredDay.classList.contains(styles.isLocked)) {
         //e.preventDefault();
 
-        this.datePicked.push(new DateTime(this.lastMouseEnteredDay.dataset.time));
+        const secondDate = new DateTime(this.lastMouseEnteredDay.dataset.time)
         this.lastMouseEnteredDay = null
 
-        if (this.shouldSwapDatePicked()) {
-          const tempDate = this.datePicked[1].clone();
-          this.datePicked[1] = this.datePicked[0].clone();
-          this.datePicked[0] = tempDate.clone();
-        }
+        if (this.options.clickRange && this.datePicked[0].getTime() == secondDate.getTime()) {
+          if (this.isDayItem(target)) {
+            // Let's give the following click event an opprtunity to do its work.
+            this.datePicked.length = 0
+            this.rerenderDays(null, null, false)
+          } // else Click handler won't work on non-day items, but it will stop propagation of click event
+        } else {
+          this.datePicked.push(secondDate);
 
-        if (this.shouldCheckLockDays()) {
-          const locked = rangeIsLocked(this.datePicked, this.options);
-
-          if (locked) {
-            this.emit('error:range', this.datePicked);
-
-            this.datePicked.length = 0;
+          let isFlipped = false
+          if (this.shouldSwapDatePicked()) {
+            const tempDate = this.datePicked[1].clone();
+            this.datePicked[1] = this.datePicked[0].clone();
+            this.datePicked[0] = tempDate.clone();
+            isFlipped = true
           }
-        }
 
-        this.render();
+          if (this.shouldCheckLockDays()) {
+            const locked = rangeIsLocked(this.datePicked, this.options);
 
-        this.emit('preselect', ...[...this.datePicked].map(d => d.clone()));
+            if (locked) {
+              this.emit('error:range', this.datePicked);
 
-        if (this.options.autoApply) {
-          this.setDateRange(this.datePicked[0], this.datePicked[1]);
-          this.hide();
+              this.datePicked.length = 0;
+            }
+          }
+
+          this.rerenderDays(
+            this.datePicked.length > 0 ? this.datePicked[0].clone() : null,
+            this.datePicked.length > 1 ? this.datePicked[1].clone() : null,
+            isFlipped
+          )
+
+          this.emit('preselect', ...[...this.datePicked].map(d => d.clone()));
+
+          if (this.options.autoApply) {
+            this.preventClick = true
+            this.setDateRange(this.datePicked[0], this.datePicked[1]);
+            this.hide();
+          }
         }
       }
     }
@@ -490,61 +582,13 @@ export class Litepicker extends Calendar {
         return;
       }
 
-      const startDateElement = this.ui
-        .querySelector(`.${styles.dayItem}[data-time="${this.datePicked[0].getTime()}"]`);
-      let date1 = this.datePicked[0].clone();
-      let date2 = new DateTime(target.dataset.time);
-      let isFlipped = false;
+      let date1: DateTime
+      let date2: DateTime
+      let isFlipped: boolean
+      [date1, date2, isFlipped] = this.datesBoundsOf(this.datePicked[0].clone(), new DateTime(target.dataset.time))
+      this.rerenderDays(date1, date2, isFlipped)
 
-      if (date1.getTime() > date2.getTime()) {
-        const tempDate = date1.clone();
-        date1 = date2.clone();
-        date2 = tempDate.clone();
-        isFlipped = true;
-      }
-
-      const allDayItems = Array.prototype.slice.call(this.ui.querySelectorAll(`.${styles.dayItem}`));
-      allDayItems.forEach((d: HTMLElement) => {
-        const date = new DateTime(d.dataset.time);
-        const day = this.renderDay(date);
-
-        if (date.isBetween(date1, date2)) {
-          day.classList.add(styles.isInRange);
-        }
-        if (isFlipped) {
-          day.classList.add(styles.isFlipped);
-          if(date.getTime() == date1.getTime()) {
-            day.classList.add(styles.isEndDate);
-          }
-          if(date.getTime() == date2.getTime()) {
-            day.classList.add(styles.isStartDate);
-          }
-        } else {
-          if(date.getTime() == date1.getTime()) {
-            day.classList.add(styles.isStartDate);
-          }
-          if(date.getTime() == date2.getTime()) {
-            day.classList.add(styles.isEndDate);
-          }
-        }
-
-        d.className = day.className;
-      });
-
-      target.classList.add(styles.isEndDate);
       this.lastMouseEnteredDay = target
-
-      if (isFlipped) {
-        if (startDateElement) {
-          startDateElement.classList.add(styles.isFlipped);
-        }
-        target.classList.add(styles.isFlipped);
-      } else {
-        if (startDateElement) {
-          startDateElement.classList.remove(styles.isFlipped);
-        }
-        target.classList.remove(styles.isFlipped);
-      }
 
       if (this.options.showTooltip) {
         let days = date2.diff(date1, 'day') + 1;
@@ -574,18 +618,6 @@ export class Litepicker extends Calendar {
         }
       }
     }
-  }
-
-  private onMouseLeave(event: MouseEvent) {
-    const target = event.target as any;
-
-    if (!this.options.allowRepick
-      || (this.options.allowRepick && !this.options.startDate && !this.options.endDate)) {
-      return;
-    }
-
-    this.datePicked.length = 0;
-    this.render();
   }
 
   private onInput(event) {

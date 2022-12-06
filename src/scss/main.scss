@@ -111,6 +111,7 @@
 
             > .month-item-year {
               padding: 0;
+              cursor: pointer;
             }
           }
 
@@ -143,7 +144,7 @@
             padding: 3px 5px;
             border-radius: 3px;
             transition: color 0.3s, border 0.3s;
-            cursor: default;
+            cursor: pointer;
 
             * {
               pointer-events: none;
@@ -265,7 +266,7 @@
           text-decoration: none;
           border-radius: 3px;
           transition: color 0.3s, border 0.3s;
-          cursor: default;
+          cursor: pointer;
 
           &:hover {
             color: var(--litepicker-day-color-hover);
@@ -282,7 +283,6 @@
             &:hover {
               color: var(--litepicker-is-locked-color);
               box-shadow: none;
-              cursor: default;
             }
           }
 
@@ -346,6 +346,7 @@
         justify-content: center;
         color: var(--litepicker-month-week-number-color);
         font-size: 85%;
+        cursor: poiner;
       }
     }
 

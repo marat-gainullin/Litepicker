@@ -40,6 +40,7 @@ export class LPCore extends EventEmitter {
     autoApply: true,
     allowRepick: false,
     dragRange: false,
+    clickRange: false,
     showWeekNumbers: false,
     showTooltip: true,
     scrollToDate: true,
@@ -263,7 +264,7 @@ export class LPCore extends EventEmitter {
     return [];
   }
 
-  protected isShowning() {
+  protected isShowing() {
     return this.ui && this.ui.style.display !== 'none';
   }
 

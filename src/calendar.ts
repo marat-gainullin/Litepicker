@@ -4,6 +4,18 @@ import { ILPConfiguration } from './interfaces';
 import * as styles from './scss/main.scss';
 import { dateIsLocked, findNestedMonthItem } from './utils';
 
+function startOfDay(date?: Date): Date {
+  const d = date ? new Date(date.getTime()) : new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function endOfDay(date?: Date): Date {
+  const d = date ? new Date(date.getTime()) : new Date()
+  d.setHours(23, 59, 59, 999)
+  return d
+}
+
 export class Calendar extends LPCore {
   constructor(options: ILPConfiguration) {
     super(options);
@@ -524,5 +536,19 @@ export class Calendar extends LPCore {
     if (total < 0) total += 7;
 
     return total;
+  }
+
+  protected startOfWeek(date: Date): Date {
+    const d = new Date(date.getTime())
+    const day = d.getDay() == 0 ? 6 : d.getDay() - this.options.firstDay
+    d.setDate(d.getDate() - day)
+    return startOfDay(d)
+  }
+
+  protected endOfWeek(date: Date): Date {
+    const d = new Date(date.getTime())
+    const day = d.getDay() == 0 ? 6 : d.getDay() - this.options.firstDay
+    d.setDate(d.getDate() + 6 - day)
+    return endOfDay(d)
   }
 }

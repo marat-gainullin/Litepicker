@@ -161,7 +161,7 @@ Litepicker.add('mobilefriendly', {
       // get correct viewport after changing orientation
       // https://stackoverflow.com/a/49383279/2873909
       const afterOrientationChange = () => {
-        if (isMobile() && picker.isShowning()) {
+        if (isMobile() && picker.isShowing()) {
           const orientation = getOrientation();
 
           switch (orientation) {

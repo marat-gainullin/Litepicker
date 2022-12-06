@@ -18,9 +18,9 @@ Litepicker.add('keyboardnav', {
     function handleEnter(target, evt) {
       if (target.classList.contains('day-item')) {
         evt.preventDefault();
-  
+
         document.activeElement.dispatchEvent(new Event('click'));
-  
+
         setTimeout(() => {
           let focusEl = picker.ui.querySelector('.is-start-date[tabindex="2"]');
           if (!focusEl) {
@@ -34,16 +34,16 @@ Litepicker.add('keyboardnav', {
     function handleTab(target, evt) {
       setTimeout(() => {
         const currentElement = document.activeElement;
-  
+
         if (!currentElement.closest('.litepicker')) {
           let focusEl = picker.ui.querySelector('[tabindex="1"]');
-  
+
           if (target === focusEl) {
             // @TODO bug: not focused to last day by Shift+Tab
             const elms = picker.ui.querySelectorAll('[tabindex="2"]');
             focusEl = elms[elms.length - 1];
           }
-  
+
           focusEl.focus();
         }
       });
@@ -52,13 +52,13 @@ Litepicker.add('keyboardnav', {
     function handleArrowUpDown(target, evt) {
       if (target.classList.contains('day-item')) {
         evt.preventDefault();
-  
+
         const nextElement = findAllowableDaySibling(picker.ui, target, (idx, targetIdx) => {
           // tslint:disable-next-line: no-parameter-reassignment
           targetIdx = evt.code === 'ArrowUp' ? targetIdx - 7 : targetIdx + 7;
           return idx === targetIdx;
         });
-  
+
         if (nextElement) {
           nextElement.focus();
         }
@@ -68,13 +68,13 @@ Litepicker.add('keyboardnav', {
     function handleArrowLeftRight(target, evt) {
       if (target.classList.contains('day-item')) {
         evt.preventDefault();
-  
+
         const nextElement = findAllowableDaySibling(picker.ui, target, (idx, targetIdx) => {
           // tslint:disable-next-line: no-parameter-reassignment
           targetIdx = evt.code === 'ArrowLeft' ? targetIdx - 1 : targetIdx + 1;
           return idx === targetIdx;
         });
-  
+
         if (nextElement) {
           nextElement.focus();
         } else {
@@ -88,26 +88,26 @@ Litepicker.add('keyboardnav', {
         ArrowLeft: '.button-previous-month',
         ArrowRight: '.button-next-month',
       };
-  
+
       const button = picker.ui.querySelector(`${buttons[evt.code]}[tabindex="1"]`);
       if (button) {
         button.dispatchEvent(new Event('click'));
       }
-  
+
       setTimeout(() => {
         let focusEl = null;
-  
+
         switch (evt.code) {
           case 'ArrowLeft':
             const elms = picker.ui.querySelectorAll('[tabindex="2"]');
             focusEl = elms[elms.length - 1];
             break;
-  
+
           case 'ArrowRight':
             focusEl = picker.ui.querySelector('[tabindex="2"]');
             break;
         }
-  
+
         focusEl.focus();
       });
     }
@@ -115,7 +115,7 @@ Litepicker.add('keyboardnav', {
     function findAllowableDaySibling(picker, target, isAllow) {
       const elms = Array.from(picker.querySelectorAll('.day-item[tabindex="2"]'));
       const targetIdx = elms.indexOf(target);
-    
+
       return elms.filter((el, idx) => {
         return isAllow(idx, targetIdx) && el.tabIndex === 2;
       })[0];
@@ -123,26 +123,26 @@ Litepicker.add('keyboardnav', {
 
     function onKeyDown(evt) {
       const target = evt.target;
-  
+
       setTimeout(() => {
         this.onMouseEnter({ target: document.activeElement });
       });
-  
+
       switch (evt.code) {
         case 'ArrowUp':
         case 'ArrowDown':
           handleArrowUpDown(target, evt);
           break;
-  
+
         case 'ArrowLeft':
         case 'ArrowRight':
           handleArrowLeftRight(target, evt);
           break;
-  
+
         case 'Tab':
           handleTab(target, evt);
           break;
-  
+
         case 'Enter':
         case 'Space':
           handleEnter(target, evt);
@@ -168,7 +168,7 @@ Litepicker.add('keyboardnav', {
         return;
       }
 
-      if (this.isShowning()) {
+      if (this.isShowing()) {
         return;
       }
 
@@ -182,11 +182,11 @@ Litepicker.add('keyboardnav', {
       if (this.options.inlineMode) {
         return;
       }
-  
+
       // get next focusable element
       setTimeout(() => {
         const activeElement = document.activeElement;
-  
+
         if (!this.ui.contains(activeElement)) {
           this.nextFocusElement = activeElement;
         }
