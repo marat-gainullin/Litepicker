@@ -11,8 +11,6 @@ Litepicker.add('ranges', {
     };
     picker.options.ranges = { ...defaultOptions, ...picker.options.ranges };
 
-    picker.options.singleMode = false;
-
     const options = picker.options.ranges;
 
     if (!Object.keys(options.customRanges).length) {
@@ -66,11 +64,15 @@ Litepicker.add('ranges', {
             const endEnd = picker.DateTime(Number(el.dataset.end));
 
             if (options.autoApply) {
-              picker.setDateRange(
-                startDate,
-                endEnd,
-                options.force
-              );
+              if (picker.options.singleMode) {
+                picker.setDate(startDate);
+              } else {
+                picker.setDateRange(
+                  startDate,
+                  endEnd,
+                  options.force
+                );
+              }
 
               picker.emit('ranges.selected', startDate, endEnd);
 
