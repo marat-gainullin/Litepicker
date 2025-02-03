@@ -1,8 +1,8 @@
-import { LPCore } from './core';
-import { DateTime } from './datetime';
-import { ILPConfiguration } from './interfaces';
-import * as styles from './scss/main.scss';
-import { dateIsLocked, findNestedMonthItem } from './utils';
+import { LPCore } from './core'
+import { DateTime } from './datetime'
+import { ILPConfiguration } from './interfaces'
+import * as styles from './scss/main.scss'
+import { dateIsLocked, findNestedMonthItem } from './utils'
 
 function startOfDay(date?: Date): Date {
   const d = date ? new Date(date.getTime()) : new Date()
@@ -284,7 +284,7 @@ export class Calendar extends LPCore {
 
     if (this.options.showWeekNumbers) {
       const weekNumbersHeader = document.createElement('div');
-      weekNumbersHeader.innerText = "W."
+      weekNumbersHeader.innerText = this.options.weekNumbersHeader ?? 'W.'
       weekNumbersHeader.className = styles.monthItemWeekNumbersHeader;
       weekdaysRow.appendChild(weekNumbersHeader);
     }
@@ -512,7 +512,7 @@ export class Calendar extends LPCore {
 
   protected renderWeekNumber(date: DateTime) {
     const wn = document.createElement('div');
-    const week = date.getWeek(this.options.firstDay);
+    const week = date.getWeek();
     wn.className = styles.weekNumber;
     wn.innerHTML = String(week);
     wn.dataset.time = String(date.getTime());

@@ -1,5 +1,5 @@
-import { DateTime } from './datetime';
-import { Litepicker } from './litepicker';
+import { DateTime } from './datetime'
+import { Litepicker } from './litepicker'
 
 interface ILPOptionDropdowns {
   minYear: number;
@@ -52,6 +52,7 @@ export interface ILPConfiguration {
   dragRange?: boolean;
   clickRange?: boolean;
   showWeekNumbers?: boolean;
+  weekNumbersHeader?: string
   showTooltip?: boolean;
   scrollToDate?: boolean;
   mobileFriendly?: boolean;

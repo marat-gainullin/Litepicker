@@ -236,16 +236,16 @@ export class DateTime {
     return this.dateInstance.setFullYear(arg);
   }
 
-  public getWeek(firstDay: number): number {
-    const target = new Date(this.timestamp());
-    const dayNr = (this.getDay() + (7 - firstDay)) % 7;
-    target.setDate(target.getDate() - dayNr);
-    const startWeekday = target.getTime();
-    target.setMonth(0, 1);
-    if (target.getDay() !== firstDay) {
-      target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
-    }
-    return 1 + Math.ceil((startWeekday - target.getTime()) / 604800000);
+  public getWeek(): number {
+    var copied = new Date(this.timestamp());
+    copied.setHours(0, 0, 0, 0);
+    // Thursday in current week decides the year.
+    copied.setDate(copied.getDate() + 3 - (copied.getDay() + 6) % 7);
+    // January 4 is always in week 1.
+    var week1 = new Date(copied.getFullYear(), 0, 4);
+    // Adjust to Thursday in week 1 and count number of weeks from date to week1.
+    return 1 + Math.round(((copied.getTime() - week1.getTime()) / 86400000
+                          - 3 + (week1.getDay() + 6) % 7) / 7);
   }
 
   public clone(): DateTime {
